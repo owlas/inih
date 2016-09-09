@@ -9,6 +9,7 @@
 #define __INIREADER_H__
 
 #include <map>
+#include <set>
 #include <string>
 
 // Read an INI file into easy-to-access name/value pairs. (Note that I've gone
@@ -42,9 +43,13 @@ public:
     // and valid false values are "false", "no", "off", "0" (not case sensitive).
     bool GetBoolean(std::string section, std::string name, bool default_value);
 
+    // Get names of sections in the INI file in alphabetical order
+    std::set<std::string> GetSections() const;
+
 private:
     int _error;
     std::map<std::string, std::string> _values;
+    std::set<std::string> _sections;
     static std::string MakeKey(std::string section, std::string name);
     static int ValueHandler(void* user, const char* section, const char* name,
                             const char* value);
@@ -114,6 +119,11 @@ bool INIReader::GetBoolean(string section, string name, bool default_value)
         return default_value;
 }
 
+std::set<std::string> INIReader::GetSections() const
+{
+    return _sections;
+}
+
 string INIReader::MakeKey(string section, string name)
 {
     string key = section + "=" + name;
@@ -130,6 +140,7 @@ int INIReader::ValueHandler(void* user, const char* section, const char* name,
     if (reader->_values[key].size() > 0)
         reader->_values[key] += "\n";
     reader->_values[key] += value;
+    reader->_sections.insert(section);
     return 1;
 }
 
